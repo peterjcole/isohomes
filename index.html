@@ -22,6 +22,7 @@
     <!-- Import jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.11.0/underscore-min.js"></script>
 
     <style>
       body {
@@ -78,9 +79,15 @@
             </div>
           </label>
         </div>
+
+        <h4 class="txt-m txt-bold mb6">Chose a time:</h4>
+        <div class="mb12 mr12 toggle-group align-center">
+          <input name="time" type="text" value="17:00" />
+        </div>
+
         <h4 class="txt-m txt-bold mb6">Chose a maximum duration:</h4>
         <div class="mb12 mr12 toggle-group align-center">
-          <input name="duration" type="text" value="50" /><span>minutes</span>
+          <input name="duration" type="text" value="50" />&nbsp; <span>minutes</span>
         </div>
         <p>
           Note: public transport is calculated assuming a 5pm departure today
@@ -95,7 +102,7 @@
       const lat = 51.546748;
 
       mapboxgl.accessToken =
-        "pk.eyJ1IjoicGV0ZXJqY29sZSIsImEiOiJja2dtbnMxb3kwMno1MnFtdWd5NzdpNWdqIn0.u8F8idbRFhH3Q08gqXG-LA";
+        "pk.eyJ1IjoiYW50aG9ueWh1bGwiLCJhIjoiY2p4eWlub2k2MDV4YjNxcWpvaXk3YjRhNyJ9.XK5kjKyu40OBZGX4Bom0oA";
 
       const map = new mapboxgl.Map({
         container: "map", // Specify the container ID
@@ -110,9 +117,10 @@
         "https://dev.virtualearth.net/REST/v1/Routes/Isochrones";
       let profile = "public-transport";
       let minutes = 50;
+      let time = "17:00"
 
       const BING_MAPS_API_KEY =
-        "AvmtGJAkIwCtWRVQ0drlyRN-QrGE3kez8fJWdgPX8SeqOUrRDGj-XfH66R1Mh9FP";
+        "AgUcQTU4PGnZEHBmKB5hEPmssCNSq5SuSmMR8gjXRoXtXVsXTBH6qvRA0AM_JeTo";
       const geoJson = {
         features: [
           {
@@ -141,7 +149,7 @@
       };
 
       function getBingMapsIso() {
-        const url = `${bingMapsUrlBase}?waypoint=${marker._lngLat.lat},${marker._lngLat.lng}&maxTime=${minutes}&timeUnit=minute&travelMode=transit&dateTime=17:00:00&key=${BING_MAPS_API_KEY}`;
+        const url = `${bingMapsUrlBase}?waypoint=${marker._lngLat.lat},${marker._lngLat.lng}&maxTime=${minutes}&timeUnit=minute&travelMode=transit&dateTime=${time}:00&key=${BING_MAPS_API_KEY}`;
 
         $.ajax({
           method: "GET",
@@ -265,15 +273,20 @@
       const params = document.getElementById("params");
 
       // When a user changes the value of profile or duration by clicking a button, change the parameter's value and make the API query again
-      params.addEventListener("change", function (e) {
+      params.addEventListener("change", _.debounce(updateParams,250));
+
+      function updateParams(e) {
         if (e.target.name === "profile") {
-          profile = e.target.value;
-          getIso();
+            profile = e.target.value;
+            getIso();
         } else if (e.target.name === "duration") {
-          minutes = e.target.value;
-          getIso();
+            minutes = e.target.value;
+            getIso();
+        } else if (e.target.name === "time") {            
+            time = e.target.value;
+            getIso();
         }
-      });
+      }
     </script>
   </body>
 </html>
